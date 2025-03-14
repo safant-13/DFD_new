@@ -1,2 +1,5 @@
 venv/
 /weights/*
+weight/genconvit_ed_inference.pth
+weight/genconvit_vae_inference.pth
+```
