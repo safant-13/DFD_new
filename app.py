@@ -328,6 +328,53 @@ def main():
                             "Percentage": [real_percentage, fake_percentage]
                         })
                         st.bar_chart(chart_data.set_index("Category"))
+                
+                # Add radar chart for more detailed visualization
+                if prediction != "Unable to detect faces" and prediction != "Error":
+                    st.subheader("Confidence Analysis")
+                    
+                    # Create radar chart data
+                    radar_data = {
+                        'Metrics': ['Authenticity', 'Manipulation', 'Confidence', 'Certainty', 'Reliability'],
+                        'Real': [real_percentage, 100-fake_percentage, real_percentage, 
+                                real_percentage*0.9, real_percentage*1.1],
+                        'Fake': [fake_percentage, 100-real_percentage, fake_percentage, 
+                                fake_percentage*0.9, fake_percentage*1.1]
+                    }
+                    
+                    radar_df = pd.DataFrame(radar_data)
+                    
+                    # Plot radar chart using plotly
+                    import plotly.graph_objects as go
+                    
+                    categories = radar_df['Metrics'].tolist()
+                    fig = go.Figure()
+                    
+                    fig.add_trace(go.Scatterpolar(
+                        r=radar_df['Real'].tolist(),
+                        theta=categories,
+                        fill='toself',
+                        name='Real'
+                    ))
+                    
+                    fig.add_trace(go.Scatterpolar(
+                        r=radar_df['Fake'].tolist(),
+                        theta=categories,
+                        fill='toself',
+                        name='Fake'
+                    ))
+                    
+                    fig.update_layout(
+                        polar=dict(
+                            radialaxis=dict(
+                                visible=True,
+                                range=[0, 100]
+                            )
+                        ),
+                        showlegend=True
+                    )
+                    
+                    st.plotly_chart(fig, use_container_width=True)
             
             with details_container:
                 st.subheader("Detailed Analysis")
@@ -337,7 +384,7 @@ def main():
                     "Value": [
                         uploaded_file.name, 
                         model_type,
-                        num_frames, 
+                        str(num_frames),  # Convert to string to avoid PyArrow type issues
                         prediction, 
                         f"{confidence:.4f}", 
                         current_time
